@@ -46,13 +46,15 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 
   /* RevLine brand tokens — declared LAST so they win over shadcn aliases */
-  --color-bg: #0a0a0a;
-  --color-card: #1a1a1a;
-  --color-border: #2a2a2a;
-  --color-fg: #f5f5f5;
-  --color-muted: #808080;
-  --color-accent: #d41111;
-  --color-accent-button: #d41111e5;
+  --color-bg: hsl(0 0% 5%);
+  --color-card: hsl(0 0% 8%);
+  --color-border: hsl(0 0% 14%);
+  --color-fg: hsl(0 0% 95%);
+  --color-muted: hsl(0 0% 50%);
+  --color-accent: hsl(0 85% 45%);
+  --color-accent-button: hsl(0 85% 45% / 0.9);
+  --font-bebas: var(--font-bebas);
+  --font-display: var(--font-bebas);
 }
 
 :root {
@@ -170,6 +172,24 @@ input.no-spin {
 .leaflet-control,
 .leaflet-container {
   z-index: 0 !important;
+}
+
+/* Brand glow utilities (Base44 heritage) */
+.glow-red {
+  box-shadow: 0 0 30px hsl(0 85% 45% / 0.15);
+}
+.glow-red-sm {
+  box-shadow: 0 0 12px hsl(0 85% 45% / 0.20);
+}
+
+/* Light theme variant (toggle by setting `light` class on <html>) */
+html.light {
+  color-scheme: light;
+  --color-bg: hsl(0 0% 97%);
+  --color-card: hsl(0 0% 100%);
+  --color-border: hsl(0 0% 88%);
+  --color-fg: hsl(0 0% 8%);
+  --color-muted: hsl(0 0% 45%);
 }
 
 /* Force popover/portal content above map */

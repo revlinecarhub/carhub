@@ -9,12 +9,24 @@ export type EventWithOwner = Event & {
   owner: { username: string; avatar_url: string | null } | null;
 };
 
-export async function listActiveEvents(): Promise<EventWithOwner[]> {
+export async function listAllEvents(): Promise<EventWithOwner[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("events")
     .select("*, owner:profiles!events_owner_id_fkey(username, avatar_url)")
-    .gte("event_date", new Date().toISOString())
+    .order("event_date", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as EventWithOwner[];
+}
+
+export async function listActiveEvents(): Promise<EventWithOwner[]> {
+  const supabase = await createClient();
+  const now = new Date().toISOString();
+  // Active = end_date >= now (if set) OR start_date >= now (if no end_date)
+  const { data, error } = await supabase
+    .from("events")
+    .select("*, owner:profiles!events_owner_id_fkey(username, avatar_url)")
+    .or(`event_end_date.gte.${now},and(event_end_date.is.null,event_date.gte.${now})`)
     .order("event_date", { ascending: true });
   if (error) throw error;
   return (data ?? []) as unknown as EventWithOwner[];

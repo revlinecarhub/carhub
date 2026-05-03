@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { createEventAction } from "../actions";
 import { EventLocationPickerWrapper as EventLocationPicker } from "@/components/events/EventLocationPickerWrapper";
 import { DateTimePicker } from "@/components/events/DateTimePicker";
+import { eventCategoryValues, eventCategoryLabels } from "@/lib/schemas/event";
 
 const INPUT_CLASS = "w-full rounded border border-[var(--color-border)] bg-[var(--color-card)] p-3 text-sm";
 const LABEL_CLASS = "mb-1 block text-xs uppercase tracking-wider text-[var(--color-muted)]";
@@ -23,6 +24,7 @@ export default function NewEventPage() {
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [eventDate, setEventDate] = useState<string>("");
+  const [eventEndDate, setEventEndDate] = useState<string>("");
   const [locationQuery, setLocationQuery] = useState<string>("");
   const [locationName, setLocationName] = useState<string>("");
   const [searching, setSearching] = useState(false);
@@ -75,7 +77,11 @@ export default function NewEventPage() {
             return;
           }
           if (!eventDate) {
-            toast.error("Choisis une date");
+            toast.error("Choisis une date de début");
+            return;
+          }
+          if (eventEndDate && new Date(eventEndDate) < new Date(eventDate)) {
+            toast.error("Date fin doit être après début");
             return;
           }
           const fd = new FormData(e.currentTarget);
@@ -84,6 +90,8 @@ export default function NewEventPage() {
             description: String(fd.get("description") ?? ""),
             location_name: locationName,
             event_date: eventDate,
+            event_end_date: eventEndDate || "",
+            category: String(fd.get("category") ?? ""),
             lat,
             lng,
           };
@@ -106,6 +114,15 @@ export default function NewEventPage() {
         <div>
           <label className={LABEL_CLASS}>Titre *</label>
           <input name="title" required maxLength={120} className={INPUT_CLASS} />
+        </div>
+        <div>
+          <label className={LABEL_CLASS}>Catégorie</label>
+          <select name="category" defaultValue="" className={INPUT_CLASS}>
+            <option value="">Sélectionner</option>
+            {eventCategoryValues.map((c) => (
+              <option key={c} value={c}>{eventCategoryLabels[c]}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className={LABEL_CLASS}>Description</label>
@@ -147,8 +164,12 @@ export default function NewEventPage() {
         </div>
 
         <div>
-          <label className={LABEL_CLASS}>Date et heure *</label>
+          <label className={LABEL_CLASS}>Date et heure de début *</label>
           <DateTimePicker name="event_date" value={eventDate} onChange={setEventDate} />
+        </div>
+        <div>
+          <label className={LABEL_CLASS}>Date et heure de fin (optionnel)</label>
+          <DateTimePicker name="event_end_date" value={eventEndDate} onChange={setEventEndDate} />
         </div>
 
         <div>

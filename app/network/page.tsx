@@ -6,6 +6,7 @@ import { listCarsByOwners } from "@/lib/cars/repo";
 import { CarCard } from "@/components/CarCard";
 import { ProfileMiniCard } from "@/components/network/ProfileMiniCard";
 import { NetworkTabs } from "@/components/network/NetworkTabs";
+import { DiscoverList } from "@/components/network/DiscoverList";
 
 export default async function NetworkPage() {
   const supabase = await createClient();
@@ -45,18 +46,7 @@ export default async function NetworkPage() {
       </ul>
     );
 
-  const discoverSection =
-    discover.length === 0 ? (
-      <p className="text-sm text-[var(--color-muted)]">Aucun nouveau profil à découvrir.</p>
-    ) : (
-      <ul className="space-y-3">
-        {discover.map((p) => (
-          <li key={p.id}>
-            <ProfileMiniCard profile={p} initialFollowing={false} />
-          </li>
-        ))}
-      </ul>
-    );
+  const discoverSection = <DiscoverList profiles={discover} />;
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-12">

@@ -35,7 +35,6 @@ export async function updateSession(request: NextRequest) {
     path === "/events/new" ||
     /^\/events\/[^/]+\/edit$/.test(path) ||
     path.startsWith("/network") ||
-    path.startsWith("/me/") ||
     path.startsWith("/settings/") ||
     path.startsWith("/admin");
 

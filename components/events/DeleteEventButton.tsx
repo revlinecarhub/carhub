@@ -1,10 +1,12 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteEventAction } from "@/app/events/actions";
 
 export function DeleteEventButton({ id, label }: { id: string; label: string }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -15,6 +17,7 @@ export function DeleteEventButton({ id, label }: { id: string; label: string }) 
           try {
             await deleteEventAction(id);
             toast.success("Événement supprimé");
+            router.refresh();
           } catch (e) {
             toast.error(e instanceof Error ? e.message : "Erreur");
           }

@@ -87,7 +87,7 @@ export async function createCarAction(input: z.infer<typeof createSchema>) {
   revalidatePath("/");
   revalidatePath("/cars");
   revalidatePath(`/cars/${slug}`);
-  redirect(`/me/cars`);
+  redirect(`/cars/${slug}`);
 }
 
 const updateSchema = z.object({
@@ -133,7 +133,7 @@ export async function updateCarAction(input: z.infer<typeof updateSchema>) {
   revalidatePath("/");
   revalidatePath("/cars");
   revalidatePath(`/cars/${existing.slug}`);
-  redirect(`/me/cars`);
+  redirect(`/cars/${existing.slug}`);
 }
 
 export async function deleteCarAction(id: string) {

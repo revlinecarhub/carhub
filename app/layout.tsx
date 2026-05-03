@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Playfair_Display, Bebas_Neue } from "next/font/google";
 import { Toaster } from "sonner";
-import { AppSidebar } from "@/components/Sidebar";
+import { TopNav } from "@/components/TopNav";
 import { Footer } from "@/components/Footer";
 import "./globals.css";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
+const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400", variable: "--font-bebas" });
 
 export const metadata: Metadata = {
   title: "RevLine Hub",
@@ -17,25 +16,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${inter.variable} ${playfair.variable} dark`}>
-      <body className="min-h-screen">
-        <TooltipProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset className="flex min-h-screen flex-col">
-              <header className="sticky top-0 z-30 flex h-12 items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-bg)] px-3">
-                <SidebarTrigger />
-              </header>
-              <main className="flex-1">
-                <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-                  {children}
-                </div>
-              </main>
-              <Footer />
-            </SidebarInset>
-            <Toaster richColors theme="dark" position="top-right" />
-          </SidebarProvider>
-        </TooltipProvider>
+    <html lang="fr" className={`${inter.variable} ${playfair.variable} ${bebas.variable} dark`}>
+      <body className="flex min-h-screen flex-col">
+        <TopNav />
+        <main className="flex-1">{children}</main>
+        <Footer />
+        <Toaster richColors theme="dark" position="top-right" />
       </body>
     </html>
   );

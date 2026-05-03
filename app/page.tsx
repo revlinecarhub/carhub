@@ -1,3 +1,4 @@
+import { Car as CarIcon } from "lucide-react";
 import { listCars, distinctMarques, distinctPays } from "@/lib/cars/repo";
 import { CarCard } from "@/components/CarCard";
 import { CarToolbar } from "@/components/CarToolbar";
@@ -36,25 +37,32 @@ export default async function HomePage({
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12">
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <header className="mb-12 text-center">
-        <p className="text-sm uppercase tracking-[0.3em] text-[var(--color-accent)]">
+        <div className="mb-4 flex items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-[var(--color-accent)]">
+          <span className="h-px w-12 bg-[var(--color-accent)]/40" />
           Collection Automobile
-        </p>
+          <span className="h-px w-12 bg-[var(--color-accent)]/40" />
+        </div>
         <h1
-          className="mt-3 font-serif text-6xl md:text-8xl text-white"
+          className="font-serif text-7xl md:text-9xl text-white tracking-wider"
           style={{ fontFamily: "var(--font-playfair)" }}
         >
           REVLINE
         </h1>
-        <p className="mt-4 text-base text-[var(--color-muted)]">
+        <p className="mt-6 text-base text-[var(--color-muted)]">
           Explorez, partagez et commentez les plus belles voitures de la collection.
         </p>
       </header>
 
-      <div className="mb-8">
+      <div className="mb-6">
         <CarToolbar marques={marques} pays={pays} />
       </div>
+
+      <p className="mb-6 inline-flex items-center gap-2 text-sm text-[var(--color-muted)]">
+        <CarIcon className="h-4 w-4" />
+        {cars.length} véhicule{cars.length > 1 ? "s" : ""} trouvé{cars.length > 1 ? "s" : ""}
+      </p>
 
       {cars.length === 0 ? (
         <p className="text-[var(--color-muted)]">Aucune voiture trouvée.</p>

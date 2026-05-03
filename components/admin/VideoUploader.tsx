@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Film, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
 export type VideoValue = {
@@ -26,10 +27,10 @@ export function VideoUploader({
   value: VideoValue;
   onChange: (next: VideoValue) => void;
   onUploadingChange?: (uploading: boolean) => void;
-  /** Called when a NEW upload (not initial) is removed/replaced before save */
   onUploadOrphaned?: (publicId: string) => void;
   initialPublicId?: string | null;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -65,8 +66,7 @@ export function VideoUploader({
         };
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            const data = JSON.parse(xhr.responseText);
-            resolve(data);
+            resolve(JSON.parse(xhr.responseText));
           } else {
             reject(new Error(`Upload failed (${xhr.status})`));
           }
@@ -88,7 +88,6 @@ export function VideoUploader({
     setProgress(0);
     try {
       const data = await uploadFile(file);
-      // Replacing existing? Mark current as orphan if it was a new upload
       maybeOrphan(value.public_id);
       onChange({ url: data.secure_url, public_id: data.public_id });
       toast.success("Vidéo uploadée");
@@ -97,38 +96,68 @@ export function VideoUploader({
     } finally {
       setUp(false);
       setProgress(0);
+      if (inputRef.current) inputRef.current.value = "";
     }
   }
 
   return (
-    <div className="space-y-3">
-      {value.url && (
-        <video
-          src={value.url}
-          controls
-          className="w-full max-w-md rounded border border-[var(--color-border)]"
-        />
-      )}
+    <div>
       <input
+        ref={inputRef}
         type="file"
         accept="video/*"
         disabled={uploading}
         onChange={(e) => e.target.files?.[0] && handle(e.target.files[0])}
-        className="block w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-[var(--color-card)] file:px-4 file:py-2 file:text-sm hover:file:bg-[var(--color-border)]"
+        className="hidden"
       />
-      {uploading && (
-        <p className="text-sm text-[var(--color-muted)]">Upload… {progress}%</p>
-      )}
-      {value.url && !uploading && (
+      {value.url ? (
+        <div className="space-y-2">
+          <div className="relative">
+            <video
+              src={value.url}
+              controls
+              className="w-full max-w-sm rounded-lg border border-[var(--color-border)]"
+            />
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => {
+                maybeOrphan(value.public_id);
+                onChange({ url: null, public_id: null });
+              }}
+              className="absolute right-2 top-2 rounded-full bg-black/70 p-1 text-white hover:bg-red-500"
+              aria-label="Supprimer la vidéo"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => inputRef.current?.click()}
+            className="text-xs text-[var(--color-muted)] hover:text-[var(--color-fg)] disabled:opacity-50"
+          >
+            Remplacer
+          </button>
+        </div>
+      ) : (
         <button
           type="button"
-          onClick={() => {
-            maybeOrphan(value.public_id);
-            onChange({ url: null, public_id: null });
-          }}
-          className="text-xs text-red-500 hover:underline"
+          disabled={uploading}
+          onClick={() => inputRef.current?.click()}
+          className="flex aspect-square w-32 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--color-border)] text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:opacity-50"
         >
-          Supprimer la vidéo
+          {uploading ? (
+            <>
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="text-xs">{progress}%</span>
+            </>
+          ) : (
+            <>
+              <Film className="h-6 w-6" />
+              <span className="text-xs">Ajouter</span>
+            </>
+          )}
         </button>
       )}
     </div>

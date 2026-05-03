@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { ImagePlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CldImage } from "next-cloudinary";
 
@@ -13,7 +14,6 @@ type Props = {
   initial?: UploadedImage[];
   onChange: (images: UploadedImage[]) => void;
   onUploadingChange?: (uploading: boolean) => void;
-  /** Called when a NEW upload (not from initial) is removed before save */
   onUploadOrphaned?: (publicId: string) => void;
 };
 
@@ -43,13 +43,11 @@ async function uploadOne(file: File): Promise<UploadedImage> {
   );
   if (!res.ok) throw new Error("Upload failed");
   const data = await res.json();
-  return {
-    cloudinary_url: data.secure_url,
-    cloudinary_public_id: data.public_id,
-  };
+  return { cloudinary_url: data.secure_url, cloudinary_public_id: data.public_id };
 }
 
 export function ImageUploader({ initial = [], onChange, onUploadingChange, onUploadOrphaned }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<UploadedImage[]>(initial);
   const [uploading, setUploading] = useState(false);
   const initialIds = new Set(initial.map((i) => i.cloudinary_public_id));
@@ -74,14 +72,12 @@ export function ImageUploader({ initial = [], onChange, onUploadingChange, onUpl
       toast.error(e instanceof Error ? e.message : "Erreur upload");
     } finally {
       setUp(false);
+      if (inputRef.current) inputRef.current.value = "";
     }
   }
 
   function remove(publicId: string) {
-    if (!initialIds.has(publicId)) {
-      // New upload removed before save → mark for Cloudinary cleanup
-      onUploadOrphaned?.(publicId);
-    }
+    if (!initialIds.has(publicId)) onUploadOrphaned?.(publicId);
     update(images.filter((i) => i.cloudinary_public_id !== publicId));
   }
 
@@ -94,51 +90,46 @@ export function ImageUploader({ initial = [], onChange, onUploadingChange, onUpl
   }
 
   return (
-    <div className="space-y-4">
-      <label className="block">
-        <span className="block text-sm uppercase tracking-wider text-[var(--color-muted)]">
-          Images
-        </span>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          disabled={uploading}
-          onChange={(e) => e.target.files && handleFiles(e.target.files)}
-          className="mt-2 block w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-[var(--color-card)] file:px-4 file:py-2 file:text-sm hover:file:bg-[var(--color-border)]"
-        />
-        {uploading && <p className="mt-2 text-sm text-[var(--color-muted)]">Upload…</p>}
-      </label>
-
-      {images.length > 0 && (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {images.map((img, idx) => (
-            <li
-              key={img.cloudinary_public_id}
-              className="relative aspect-square overflow-hidden rounded border border-[var(--color-border)]"
-            >
-              <CldImage
-                src={img.cloudinary_url}
-                alt=""
-                fill
-                sizes="200px"
-                className="object-cover"
-              />
-              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/70 p-1 text-xs">
-                <button type="button" onClick={() => move(idx, -1)} disabled={idx === 0}>
-                  ←
-                </button>
-                <button type="button" onClick={() => remove(img.cloudinary_public_id)} className="text-red-400">
-                  ✕
-                </button>
-                <button type="button" onClick={() => move(idx, 1)} disabled={idx === images.length - 1}>
-                  →
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        disabled={uploading}
+        onChange={(e) => e.target.files && e.target.files.length > 0 && handleFiles(e.target.files)}
+        className="hidden"
+      />
+      <ul className="flex flex-wrap gap-3">
+        {images.map((img, idx) => (
+          <li
+            key={img.cloudinary_public_id}
+            className="relative aspect-square w-32 overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-card)]"
+          >
+            <CldImage src={img.cloudinary_url} alt="" fill sizes="128px" className="object-cover" />
+            <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/70 p-1 text-xs text-white">
+              <button type="button" onClick={() => move(idx, -1)} disabled={idx === 0} className="px-1 disabled:opacity-30">←</button>
+              <button type="button" onClick={() => remove(img.cloudinary_public_id)} className="px-1 text-red-400">✕</button>
+              <button type="button" onClick={() => move(idx, 1)} disabled={idx === images.length - 1} className="px-1 disabled:opacity-30">→</button>
+            </div>
+          </li>
+        ))}
+        <li>
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => inputRef.current?.click()}
+            className="flex aspect-square w-32 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--color-border)] text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:opacity-50"
+          >
+            {uploading ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
+              <ImagePlus className="h-6 w-6" />
+            )}
+            <span className="text-xs">{uploading ? "Upload…" : "Ajouter"}</span>
+          </button>
+        </li>
+      </ul>
     </div>
   );
 }

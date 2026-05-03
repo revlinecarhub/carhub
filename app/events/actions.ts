@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { eventInputSchema } from "@/lib/schemas/event";
 import { insertEvent, getEventById, deleteEvent, updateEvent } from "@/lib/events/repo";
-import { isAdmin } from "@/lib/profiles/repo";
+import { getProfileByUserId, isAdmin } from "@/lib/profiles/repo";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -28,6 +28,8 @@ export async function createEventAction(input: unknown) {
     lat: parsed.data.lat,
     lng: parsed.data.lng,
     event_date: parsed.data.event_date,
+    event_end_date: parsed.data.event_end_date || null,
+    category: parsed.data.category || null,
   });
   revalidatePath("/events");
   redirect("/events");
@@ -50,10 +52,13 @@ export async function updateEventAction(id: string, input: unknown) {
     lat: parsed.data.lat,
     lng: parsed.data.lng,
     event_date: parsed.data.event_date,
+    event_end_date: parsed.data.event_end_date || null,
+    category: parsed.data.category || null,
   });
+  const profile = await getProfileByUserId(user.id);
   revalidatePath("/events");
-  revalidatePath("/me/events");
-  redirect("/me/events");
+  if (profile) revalidatePath(`/u/${profile.username}`);
+  redirect(profile ? `/u/${profile.username}` : "/events");
 }
 
 export async function deleteEventAction(id: string) {
@@ -64,6 +69,7 @@ export async function deleteEventAction(id: string) {
     throw new Error("forbidden");
   }
   await deleteEvent(id);
+  const profile = ev.owner_id === user.id ? await getProfileByUserId(user.id) : null;
   revalidatePath("/events");
-  revalidatePath("/me/events");
+  if (profile) revalidatePath(`/u/${profile.username}`);
 }

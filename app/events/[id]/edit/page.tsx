@@ -29,6 +29,8 @@ export default async function EditEventPage({ params }: { params: Params }) {
           lat: ev.lat,
           lng: ev.lng,
           event_date: ev.event_date,
+          event_end_date: ev.event_end_date,
+          category: ev.category,
         }}
       />
     </div>

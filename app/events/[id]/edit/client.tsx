@@ -18,6 +18,8 @@ type Initial = {
   lat: number;
   lng: number;
   event_date: string;
+  event_end_date: string | null;
+  category: string | null;
 };
 
 type NominatimResult = {
@@ -32,6 +34,7 @@ export function EditEventClient({ id, initial }: { id: string; initial: Initial 
   const [lat, setLat] = useState<number | null>(initial.lat);
   const [lng, setLng] = useState<number | null>(initial.lng);
   const [eventDate, setEventDate] = useState<string>(initial.event_date);
+  const [eventEndDate, setEventEndDate] = useState<string>(initial.event_end_date ?? "");
   const [locationQuery, setLocationQuery] = useState<string>("");
   const [locationName, setLocationName] = useState<string>(initial.location_name);
   const [searching, setSearching] = useState(false);
@@ -74,7 +77,11 @@ export function EditEventClient({ id, initial }: { id: string; initial: Initial 
           return;
         }
         if (!eventDate) {
-          toast.error("Date manquante");
+          toast.error("Date début manquante");
+          return;
+        }
+        if (eventEndDate && new Date(eventEndDate) < new Date(eventDate)) {
+          toast.error("Date fin doit être après début");
           return;
         }
         const fd = new FormData(e.currentTarget);
@@ -83,6 +90,7 @@ export function EditEventClient({ id, initial }: { id: string; initial: Initial 
           description: String(fd.get("description") ?? ""),
           location_name: locationName,
           event_date: eventDate,
+          event_end_date: eventEndDate || "",
           lat,
           lng,
         };
@@ -141,8 +149,12 @@ export function EditEventClient({ id, initial }: { id: string; initial: Initial 
       </div>
 
       <div>
-        <label className={LABEL_CLASS}>Date et heure *</label>
+        <label className={LABEL_CLASS}>Date et heure de début *</label>
         <DateTimePicker name="event_date" value={eventDate} onChange={setEventDate} />
+      </div>
+      <div>
+        <label className={LABEL_CLASS}>Date et heure de fin (optionnel)</label>
+        <DateTimePicker name="event_end_date" value={eventEndDate} onChange={setEventEndDate} />
       </div>
 
       <div>

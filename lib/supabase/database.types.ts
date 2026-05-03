@@ -296,6 +296,8 @@ export interface Database {
           lat: number;
           lng: number;
           event_date: string;
+          event_end_date: string | null;
+          category: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -308,6 +310,8 @@ export interface Database {
           lat: number;
           lng: number;
           event_date: string;
+          event_end_date?: string | null;
+          category?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -320,6 +324,8 @@ export interface Database {
           lat?: number;
           lng?: number;
           event_date?: string;
+          event_end_date?: string | null;
+          category?: string | null;
           created_at?: string;
           updated_at?: string;
         };

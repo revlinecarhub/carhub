@@ -5,7 +5,9 @@ import { User, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getProfileByUsername, getProfileStats } from "@/lib/profiles/repo";
 import { listCarsByOwner } from "@/lib/cars/repo";
+import { listEventsByOwner } from "@/lib/events/repo";
 import { CarCard } from "@/components/CarCard";
+import { DeleteEventButton } from "@/components/events/DeleteEventButton";
 import { SocialLinksList } from "@/components/profile/SocialLinksList";
 import type { SocialLink } from "@/lib/schemas/profile";
 
@@ -20,9 +22,10 @@ export default async function ProfilePage({ params }: { params: Params }) {
   const { data: { user } } = await supabase.auth.getUser();
   const isOwner = user?.id === profile.id;
 
-  const [stats, cars] = await Promise.all([
+  const [stats, cars, events] = await Promise.all([
     getProfileStats(profile.id),
     listCarsByOwner(profile.id),
+    listEventsByOwner(profile.id),
   ]);
 
   const links = (profile.social_links ?? []) as SocialLink[];
@@ -81,6 +84,68 @@ export default async function ProfilePage({ params }: { params: Params }) {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {cars.map((c) => <CarCard key={c.id} car={c} />)}
           </div>
+        )}
+      </section>
+
+      <section className="mt-12">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="font-serif text-2xl" style={{ fontFamily: "var(--font-playfair)" }}>Événements</h2>
+          {isOwner && (
+            <Link
+              href="/events/new"
+              className="inline-flex w-fit items-center rounded bg-[var(--color-accent-button)] px-4 py-2 text-sm font-semibold text-white"
+            >
+              + Créer un événement
+            </Link>
+          )}
+        </div>
+        {events.length === 0 ? (
+          <p className="text-[var(--color-muted)]">
+            {isOwner ? "Tu n'as encore créé aucun événement." : "Aucun événement publié."}
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {events.map((event) => {
+              const past = new Date(event.event_date) < new Date();
+              return (
+                <li
+                  key={event.id}
+                  className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] p-4"
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-[var(--color-fg)]">{event.title}</span>
+                        {past && (
+                          <span className="rounded bg-[var(--color-bg)] px-2 py-0.5 text-xs text-[var(--color-muted)]">
+                            Passé
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 text-sm text-[var(--color-muted)]">{event.location_name}</div>
+                      <div className="text-sm text-[var(--color-muted)]">
+                        {new Date(event.event_date).toLocaleString("fr-FR", {
+                          dateStyle: "long",
+                          timeStyle: "short",
+                        })}
+                      </div>
+                    </div>
+                    {isOwner && (
+                      <div className="flex shrink-0 items-center gap-4 text-sm sm:flex-col sm:items-end sm:gap-2">
+                        <Link
+                          href={`/events/${event.id}/edit`}
+                          className="text-[var(--color-muted)] hover:text-[var(--color-fg)]"
+                        >
+                          Éditer
+                        </Link>
+                        <DeleteEventButton id={event.id} label={event.title} />
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </section>
     </div>
