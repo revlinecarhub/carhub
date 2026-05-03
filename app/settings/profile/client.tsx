@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AvatarUploader, type AvatarValue } from "@/components/profile/AvatarUploader";
 import { socialPlatformValues, type SocialLink } from "@/lib/schemas/profile";
+import { DeleteAccountSection } from "@/components/settings/DeleteAccountSection";
 import { updateProfileAction } from "./actions";
 
 const INPUT_CLASS = "w-full rounded border border-[var(--color-border)] bg-[var(--color-card)] p-2 text-sm";
@@ -133,6 +134,10 @@ export function ProfileSettingsForm({ initial }: { initial: Initial }) {
       >
         {pending ? "Enregistrement…" : "Enregistrer"}
       </button>
+
+      <div className="mt-12">
+        <DeleteAccountSection username={initial.username} />
+      </div>
     </form>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { loginAction } from "./actions";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
@@ -11,6 +12,11 @@ function LoginForm() {
   const [pending, startTransition] = useTransition();
   const params = useSearchParams();
   const next = params.get("next") ?? "";
+
+  useEffect(() => {
+    const e = params.get("error");
+    if (e) toast.error(e);
+  }, [params]);
 
   return (
     <form
@@ -57,7 +63,7 @@ export default function LoginPage() {
         Connexion
       </h1>
 
-      <GoogleSignInButton label="Continuer avec Google" />
+      <GoogleSignInButton label="Se connecter avec Google" intent="login" />
 
       <div className="my-6 flex items-center gap-3 text-xs text-[var(--color-muted)]">
         <div className="h-px flex-1 bg-[var(--color-border)]" />

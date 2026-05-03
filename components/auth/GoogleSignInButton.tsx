@@ -3,7 +3,15 @@
 import { useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export function GoogleSignInButton({ label }: { label: string }) {
+type Intent = "login" | "signup";
+
+export function GoogleSignInButton({
+  label,
+  intent = "login",
+}: {
+  label: string;
+  intent?: Intent;
+}) {
   const [pending, startTransition] = useTransition();
 
   return (
@@ -13,10 +21,14 @@ export function GoogleSignInButton({ label }: { label: string }) {
       onClick={() => {
         startTransition(async () => {
           const supabase = createClient();
+          const params = new URLSearchParams({
+            intent,
+            next: window.location.pathname,
+          });
           await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-              redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`,
+              redirectTo: `${window.location.origin}/auth/callback?${params.toString()}`,
             },
           });
         });
