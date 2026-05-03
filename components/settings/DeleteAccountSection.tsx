@@ -40,6 +40,9 @@ export function DeleteAccountSection({ username }: { username: string }) {
                 type="text"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.preventDefault();
+                }}
                 placeholder={username}
                 disabled={pending}
                 className="w-full rounded border border-[var(--color-border)] bg-[var(--color-card)] p-2 text-sm"
